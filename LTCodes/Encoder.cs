@@ -14,13 +14,15 @@ namespace LTCodes
         private Random randomNumberGenerator;
         private List<byte[]> blocks;
         private byte[] message;
+        private bool verbose;
 
         public int GetChunkSize(){return chunkSize;}
         public int GetMessageSize() { return messageSize; }
         public int GetNumberOfChunks() { return blocks.Count(); }
 
-        public Encoder(byte[] msg, int chunksize)
+        public Encoder(byte[] msg, int chunksize, bool verbose)
         {
+            this.verbose = verbose;
             randomNumberGenerator = new Random();
             messageSize = msg.Length;
             message = msg;
@@ -33,12 +35,15 @@ namespace LTCodes
                 degree = blocks.Count() / 2;
 
             //unit testing
-            System.Console.WriteLine("Chunk Size: {0}, Number of Chunks: {1}, Degree: {2}", chunkSize, blocks.Count(), degree);
-            
-            foreach(byte[] block in blocks)
+            if (verbose)
             {
-                string blockString = System.Text.Encoding.ASCII.GetString(block);
-                System.Console.WriteLine("Chunked Message: {0}", blockString);
+                System.Console.WriteLine("Chunk Size: {0}, Number of Chunks: {1}, Degree: {2}", chunkSize, blocks.Count(), degree);
+            
+                foreach(byte[] block in blocks)
+                {
+                    string blockString = System.Text.Encoding.ASCII.GetString(block);
+                    System.Console.WriteLine("Chunked Message: {0}", blockString);
+                }
             }
             //unit testing
         }
