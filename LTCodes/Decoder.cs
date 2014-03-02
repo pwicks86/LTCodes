@@ -83,8 +83,6 @@ namespace LTCodes
                 Array.Copy(p.packetData, 0, this.messageArray, decodedBlockIndex * chunkSize, p.packetData.Length);
                 // Mark the block as decoded
                 this.decodedBlocks[decodedBlockIndex] = true;
-
-                
             }
         }
 
