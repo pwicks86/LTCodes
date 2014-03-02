@@ -27,6 +27,7 @@ namespace LTCodes
 
             return packetArrayBytes.ToArray();
         }
+        
     }
 }
 ;

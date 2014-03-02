@@ -35,10 +35,11 @@ namespace LTCodes
         
         internal void RecvPacket(Packet p)
         {
+
             int packetDegree = p.listSelectedIndexes.Length;
             byte[] packetData = p.packetData;
             String packetAsString = System.Text.Encoding.ASCII.GetString(packetData);
-            Console.WriteLine(packetAsString);
+            Console.WriteLine("Got Packet: Degree: {0} StrData: {1}", packetDegree, packetAsString);
             // Figure out chunkSize from the packet data
             if (chunkSize == -1)
             {
@@ -47,8 +48,13 @@ namespace LTCodes
                 this.decodedBlocks = new bool[numChunks];
                 this.messageArray = new byte[chunkSize * numChunks]; 
             }
+            dealWithPacket(p);
+            
+        }
 
-            HashSet<int> indexesToRemove = new HashSet<int>(); 
+        private void dealWithPacket(Packet p)
+        {
+            HashSet<int> indexesToRemove = new HashSet<int>();
             // For each block that has been xor'd into the packet
             List<int> sourceBlockIndexList = new List<int>(p.listSelectedIndexes);
             foreach (int sourceBlockIndex in sourceBlockIndexList)
@@ -71,8 +77,11 @@ namespace LTCodes
             {
                 // Set the correct value for this and add the packet to the holdList
                 p.listSelectedIndexes = sourceBlockIndexList.ToArray();
-
-                holdList.Add(p);
+                // Add it to the hold list if it isn't there already
+                if (!holdList.Contains(p))
+                {
+                    holdList.Add(p);
+                }
             }
             // then we decoded a block!
             else if (sourceBlockIndexList.Count == 1)
@@ -83,13 +92,23 @@ namespace LTCodes
                 Array.Copy(p.packetData, 0, this.messageArray, decodedBlockIndex * chunkSize, p.packetData.Length);
                 // Mark the block as decoded
                 this.decodedBlocks[decodedBlockIndex] = true;
+                // Check if we can decode another packet because we decode this one
+                Packet possiblePacketToDecode;
+                try
+                {
+                     possiblePacketToDecode = holdList.First(thePacket => thePacket.listSelectedIndexes.Contains(decodedBlockIndex));
+                }
+                catch (InvalidOperationException e)
+                {
+                    possiblePacketToDecode = null;
+                }
+                if (possiblePacketToDecode != null)
+                {
+                    dealWithPacket(possiblePacketToDecode);
+                }
             }
         }
 
-        private void processPacket(Packet p)
-        {
-
-        }
 
         // REturn a byte array representing a decoded chunk
         private byte[] getDecodedBlockByIndex(int sourceBlockIndex)

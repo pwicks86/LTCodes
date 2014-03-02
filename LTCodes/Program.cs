@@ -10,8 +10,9 @@ namespace LTCodes
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Full Message: Hello World!");
-            string helloString = "Hello World!";
+            string helloString = "Hello World! Foo Bar 1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!?";       
+
+            Console.WriteLine("Full Message:{0}",helloString);
             int chunkSize = 5;
             byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes (helloString);
             Encoder encoder = new Encoder(inputBytes, chunkSize);
