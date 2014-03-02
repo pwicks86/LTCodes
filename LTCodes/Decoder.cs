@@ -39,7 +39,7 @@ namespace LTCodes
             int packetDegree = p.listSelectedIndexes.Length;
             byte[] packetData = p.packetData;
             String packetAsString = System.Text.Encoding.ASCII.GetString(packetData);
-            Console.WriteLine("Got Packet: Degree: {0} StrData: {1}", packetDegree, packetAsString);
+            //Console.WriteLine("Got Packet: Degree: {0} StrData: {1}", packetDegree, packetAsString);
             // Figure out chunkSize from the packet data
             if (chunkSize == -1)
             {
@@ -92,20 +92,20 @@ namespace LTCodes
                 Array.Copy(p.packetData, 0, this.messageArray, decodedBlockIndex * chunkSize, p.packetData.Length);
                 // Mark the block as decoded
                 this.decodedBlocks[decodedBlockIndex] = true;
-                // Check if we can decode another packet because we decode this one
-                Packet possiblePacketToDecode;
-                try
+                List<Packet> reList = new List<Packet>();
+
+                foreach (Packet packetX in holdList)
                 {
-                     possiblePacketToDecode = holdList.First(thePacket => thePacket.listSelectedIndexes.Contains(decodedBlockIndex));
+                    if (packetX.listSelectedIndexes.Contains(decodedBlockIndex))
+                    {
+                        reList.Add(packetX);
+                    }
                 }
-                catch (InvalidOperationException e)
+                foreach (Packet recursivePacket in reList)
                 {
-                    possiblePacketToDecode = null;
+                    dealWithPacket(recursivePacket);
                 }
-                if (possiblePacketToDecode != null)
-                {
-                    dealWithPacket(possiblePacketToDecode);
-                }
+
             }
         }
 
