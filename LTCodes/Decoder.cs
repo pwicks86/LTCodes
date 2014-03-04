@@ -105,7 +105,6 @@ namespace LTCodes
                 {
                     dealWithPacket(recursivePacket);
                 }
-
             }
         }
 
