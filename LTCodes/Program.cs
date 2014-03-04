@@ -24,9 +24,8 @@ namespace LTCodes
     {
         static void Main(string[] args)
         {
-
-            FileStream statsOut = File.OpenWrite(String.Format("output {0:yyy-MM-dd HH-mm-ss}.csv", DateTime.Now));
-            const String formatString = "{0}, {1}, {2}%, {3}, {5}, {7}, {4}, {6}, {8}, {9}\n";
+            String fileName = String.Format("output {0:yyy-MM-dd HH-mm-ss}.csv", DateTime.Now);
+            const String formatString = "{0}, {1}, {2}%, {10}%, {3}, {5}, {7}, {4}, {6}, {8}, {9}\n";
             String stats = String.Format(formatString,
                 "Message size",
                 "Block size",
@@ -37,17 +36,18 @@ namespace LTCodes
                 "Packets decoded",
                 "Amortized encode time",
                 "Amortized decode time",
-                "Number of errors"
+                "Number of errors",
+                "Actual loss rate"
             );
-            statsOut.Write(System.Text.Encoding.ASCII.GetBytes(stats), 0, stats.Length);
+            File.AppendAllText(fileName, stats);
 
             //Test different message sizes
             for(int messageSize = 16; messageSize < Int16.MaxValue; messageSize *= 2) {
                 //Test different block sizes
-                for (int numBlocks = 1; numBlocks < messageSize; numBlocks *= 2)
+                for (int numBlocks = 2; numBlocks < messageSize; numBlocks *= 2)
                 {
                     //Test different loss rates
-                    for (int lossRate = 0; lossRate < 10; ++lossRate)
+                    for (int lossRate = 0; lossRate < 9; ++lossRate)
                     {
                         //Metric variables
                         long start = 0;
@@ -76,7 +76,7 @@ namespace LTCodes
                             numPacketsEncoded++;
                             
                             //Drop the packet?
-                            if ((rand.Next() % 10) > lossRate)
+                            if (rand.Next(1,10) > lossRate)
                             {
                                 //Decode a packet and measure the time it took
                                 start = Stopwatch.GetTimestamp();
@@ -118,16 +118,31 @@ namespace LTCodes
                             numPacketsDecoded,
                             (float)totalEncodeTime / (float)numPacketsEncoded,
                             (float)totalDecodeTime / (float)numPacketsDecoded,
-                            numWrongBytes
+                            numWrongBytes,
+                            (float)(numPacketsEncoded - numPacketsDecoded) / (float)numPacketsEncoded
                         );
-                        statsOut.Write(System.Text.Encoding.ASCII.GetBytes (stats), 0, stats.Length);
-                        statsOut.Flush();
+                        bool wroteData = false;
+                        do
+                        {
+                            try
+                            {
+                                File.AppendAllText(fileName, stats);
+                                wroteData = true;
+                            }
+                            catch (Exception e)
+                            {
+                                //Failed to write file
+                            }
+
+                        } while (!wroteData);
+                        //statsOut.Write(System.Text.Encoding.ASCII.GetBytes (stats), 0, stats.Length);
+                        //statsOut.Flush();
                         Console.Write(stats);
                     }
                 }
             }
 
-            statsOut.Close();
+            //statsOut.Close();
 
 
 /*

@@ -32,7 +32,7 @@ namespace LTCodes
 
             //assume degree to be max(1, blocks.Count() / 2);
             if (blocks.Count() > 1)
-                degree = blocks.Count() / 2;
+                degree = blocks.Count();// / 2;
 
             //unit testing
             if (verbose)
